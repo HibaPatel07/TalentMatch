@@ -1,0 +1,5 @@
+candidate_id,job_title,experience_years,skills,summary
+1,Data Scientist,4,"python,pandas,scikit-learn,sql","Experienced data scientist focused on predictive modeling and analytics."
+2,Machine Learning Engineer,5,"python,tensorflow,pytorch,aws","Builds ML systems and production pipelines for scalable services."
+3,Software Engineer,3,"java,sql,rest,agile","Full-stack engineer with backend and API experience."
+4,Product Manager,6,"roadmapping,stakeholder_management,sql","Leads cross-functional teams to deliver product strategy and execution."
