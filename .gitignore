@@ -4,3 +4,7 @@ __pycache__/
 .venv/
 .env
 .DS_Store
+mlflow.db
+mlruns/
+data/processed/
+__pycache__/
