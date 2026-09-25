@@ -8,49 +8,51 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
-INPUT_PATH = "data/processed/match_results.csv"
-OUTPUT_PATH = "data/processed/evaluation_results.csv"
+INPUT_PATH = "data/processed/match_results_mahi.csv"
+OUTPUT_PATH = "data/processed/evaluation_results_mahi.csv"
 
-# Baseline threshold
 THRESHOLD = 0.60
 
 
 def main():
 
-    # Load match results
     df = pd.read_csv(INPUT_PATH)
 
-    # Convert match score into predicted label
     df["predicted_label"] = (
         df["final_match_score"] >= THRESHOLD
     ).astype(int)
 
-    # Actual and predicted labels
-    y_true = df["match_label"]
+    y_true = df["shortlisted"]
     y_pred = df["predicted_label"]
 
-    # Calculate metrics
-    accuracy = accuracy_score(y_true, y_pred)
+    accuracy = accuracy_score(
+        y_true,
+        y_pred
+    )
+
     precision = precision_score(
         y_true,
         y_pred,
         zero_division=0
     )
+
     recall = recall_score(
         y_true,
         y_pred,
         zero_division=0
     )
+
     f1 = f1_score(
         y_true,
         y_pred,
         zero_division=0
     )
 
-    # Confusion matrix
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(
+        y_true,
+        y_pred
+    )
 
-    # Create evaluation summary
     evaluation_results = pd.DataFrame([
         {
             "threshold": THRESHOLD,
@@ -65,16 +67,18 @@ def main():
         }
     ])
 
-    # Create output directory
-    os.makedirs("data/processed", exist_ok=True)
+    os.makedirs(
+        "data/processed",
+        exist_ok=True
+    )
 
-    # Save evaluation results
     evaluation_results.to_csv(
         OUTPUT_PATH,
         index=False
     )
 
     print("\n===== TalentMatch Evaluation =====")
+    print(f"Dataset   : Mahi 6000-row dataset")
     print(f"Threshold : {THRESHOLD}")
     print(f"Accuracy  : {accuracy:.4f}")
     print(f"Precision : {precision:.4f}")
