@@ -1,10 +1,9 @@
-// The ONLY file you should need to edit when the backend is ready.
 window.TALENTMATCH_CONFIG = {
   // Set to true to work without a backend (uses fake results).
-  USE_MOCK: true,
-  // Where the teammates' FastAPI server runs.
+  USE_MOCK: false,
+  // FastAPI serves this UI on the same origin; this also works with a separate dev server.
   API_BASE: "http://localhost:8000",
-  // Endpoint + field names, taken from the project doc. Change here if the backend differs.
+  // Endpoint and request field names used by the FastAPI service.
   MATCH_PATH: "/match",
   REQUEST_FIELDS: { resume: "resume", job: "job_description" },
   // Labels for the verdict. Replace with the team's calibrated threshold later.
