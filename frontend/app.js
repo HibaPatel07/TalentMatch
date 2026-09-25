@@ -33,7 +33,7 @@ $("clear").onclick = () => {
 
 // --- Talking to the backend -------------------------------------------------
 async function fetchMatch(resume, job) {
-  if (C.USE_MOCK) return mockMatch(resume, job);
+  if (C.USE_MOCK) return normalizeMatch(await mockMatch(resume, job));
   let res;
   try {
     res = await fetch(C.API_BASE + C.MATCH_PATH, {
@@ -44,9 +44,19 @@ async function fetchMatch(resume, job) {
   } catch {
     throw new Error("Can't reach the server at " + C.API_BASE + ". Check that it is running.");
   }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "The server returned an error (" + res.status + ").");
-  return data;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = typeof data?.detail === "string"
+      ? data.detail
+      : Array.isArray(data?.detail)
+        ? data.detail
+          .map(issue => issue && typeof issue.msg === "string" ? issue.msg : "")
+          .filter(Boolean)
+          .join(" ")
+        : "";
+    throw new Error(detail || "The server returned an error (" + res.status + ").");
+  }
+  return normalizeMatch(data);
 }
 
 // Fake backend so the UI works alone. Same shape as the doc's example output.
@@ -72,6 +82,38 @@ function chips(el, items, cls) {
   items.forEach(s => { const c = document.createElement("span"); c.className = "chip " + cls; c.textContent = s; el.append(c); });
 }
 
+function normalizeMatch(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("The server returned an invalid match response.");
+  }
+
+  const score = data.match_score;
+  if (typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1) {
+    throw new Error("The server response is missing a valid match score.");
+  }
+
+  const components = data.components && typeof data.components === "object" && !Array.isArray(data.components)
+    ? Object.fromEntries(Object.entries(data.components).filter(([, value]) =>
+      typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1))
+    : {};
+  const weights = data.weights && typeof data.weights === "object" && !Array.isArray(data.weights)
+    ? Object.fromEntries(Object.entries(data.weights).filter(([, value]) =>
+      typeof value === "number" && Number.isFinite(value) && value >= 0))
+    : {};
+
+  return {
+    match_score: score,
+    matched_skills: Array.isArray(data.matched_skills)
+      ? data.matched_skills.filter(skill => typeof skill === "string")
+      : [],
+    missing_skills: Array.isArray(data.missing_skills)
+      ? data.missing_skills.filter(skill => typeof skill === "string")
+      : [],
+    components,
+    weights
+  };
+}
+
 function render(d) {
   const pct = Math.round(d.match_score * 100);
   $("result").hidden = false;
@@ -83,15 +125,27 @@ function render(d) {
 
   // Optional: only shown if the backend sends a component breakdown.
   const comps = d.components;
-  $("breakdown").hidden = !comps;
-  if (comps) {
-    $("bars").replaceChildren(...Object.keys(comps).map(k => {
-      const v = Math.round(comps[k] * 100), w = d.weights && d.weights[k];
-      const row = document.createElement("div"); row.className = "bar";
-      row.innerHTML = `<span>${LABELS[k] || k}</span><div class="track"><div class="fill" style="width:${v}%"></div></div><span class="w">${v}%${w ? " × " + w : ""}</span>`;
-      return row;
-    }));
-  }
+  const componentKeys = Object.keys(comps);
+  $("breakdown").hidden = componentKeys.length === 0;
+  $("bars").replaceChildren(...componentKeys.map(k => {
+    const value = Math.round(comps[k] * 100);
+    const row = document.createElement("div");
+    row.className = "bar";
+    const label = document.createElement("span");
+    label.textContent = LABELS[k] || k;
+    const track = document.createElement("div");
+    track.className = "track";
+    const fill = document.createElement("div");
+    fill.className = "fill";
+    fill.style.width = value + "%";
+    track.append(fill);
+    const detail = document.createElement("span");
+    detail.className = "w";
+    const weight = d.weights?.[k];
+    detail.textContent = value + "%" + (weight !== undefined ? " × " + weight : "");
+    row.append(label, track, detail);
+    return row;
+  }));
 }
 
 $("go").onclick = async () => {
