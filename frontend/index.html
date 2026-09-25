@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TalentMatch</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Candidate intelligence</p>
+      <h1>TalentMatch</h1>
+      <p class="sub">Compare a resume with a role and see the skills behind the match.</p>
+    </div>
+    <span id="mode" class="mode"></span>
+  </header>
+
+  <section class="workspace" aria-label="Resume and job comparison">
+    <div class="inputs">
+      <article class="input-card">
+        <div class="field-heading">
+          <div>
+            <span class="step">01</span>
+            <label for="resume">Resume</label>
+          </div>
+          <span id="resume-count" class="count">0 characters</span>
+        </div>
+        <textarea id="resume" placeholder="Paste the candidate's resume here" aria-describedby="resume-hint"></textarea>
+        <p id="resume-hint" class="field-hint">Include experience, skills, education, and tools.</p>
+      </article>
+
+      <article class="input-card">
+        <div class="field-heading">
+          <div>
+            <span class="step">02</span>
+            <label for="job">Job description</label>
+          </div>
+          <span id="job-count" class="count">0 characters</span>
+        </div>
+        <textarea id="job" placeholder="Paste the job description here" aria-describedby="job-hint"></textarea>
+        <p id="job-hint" class="field-hint">Include responsibilities, requirements, and qualifications.</p>
+      </article>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="go" type="button">
+        <span>Check match</span>
+        <span aria-hidden="true">&#8594;</span>
+      </button>
+      <button class="ghost" id="sample" type="button">Fill with example</button>
+      <button class="ghost" id="clear" type="button">Clear</button>
+      <span id="error" role="alert"></span>
+    </div>
+  </section>
+
+  <section id="result" class="result-panel" hidden aria-live="polite">
+    <div class="result-heading">
+      <div>
+        <p class="eyebrow">Analysis complete</p>
+        <h2>Match overview</h2>
+      </div>
+      <span class="result-tag">Skills-based comparison</span>
+    </div>
+
+    <div class="score-row">
+      <div class="score" id="score">0%</div>
+      <div>
+        <div class="verdict" id="verdict"></div>
+        <p class="score-caption">Overall fit based on the submitted information</p>
+      </div>
+    </div>
+
+    <div class="scale" aria-label="Match score from 0 to 100">
+      <div class="marker" id="marker"></div>
+    </div>
+    <div class="ticks"><span>0</span><span>100</span></div>
+
+    <div id="breakdown" hidden>
+      <h3>How the score is built</h3>
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-section">
+        <div class="section-heading">
+          <h3>Matched skills</h3>
+          <span class="section-dot good-dot"></span>
+        </div>
+        <p class="section-copy">Skills requested by the role and found in the resume.</p>
+        <div class="chips" id="matched"></div>
+      </div>
+
+      <div class="skill-section">
+        <div class="section-heading">
+          <h3>Missing skills</h3>
+          <span class="section-dot bad-dot"></span>
+        </div>
+        <p class="section-copy">Requested skills that were not detected in the resume.</p>
+        <div class="chips" id="missing"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
