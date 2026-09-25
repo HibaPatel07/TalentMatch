@@ -1,5 +1,4 @@
 import os
-
 import pandas as pd
 
 from src.models.embedding_model import load_embedding_model
@@ -9,45 +8,43 @@ from src.matching.experience_match import calculate_experience_match
 from src.matching.scorer import calculate_match_score
 
 
-INPUT_PATH = "data/raw/talentmatch_dummy_dataset.csv"
-OUTPUT_PATH = "data/processed/match_results.csv"
+INPUT_PATH = "data/processed/Mahi_final_preprocessed_dataset.csv"
+OUTPUT_PATH = "data/processed/match_results_mahi.csv"
 
 
 def main():
 
-    # Load dataset
     df = pd.read_csv(INPUT_PATH)
 
-    # Load BGE model once
     model = load_embedding_model()
+
+    resume_embeddings = model.encode(
+        df["resume_text_clean"].tolist()
+    )
+
+    job_embeddings = model.encode(
+        df["job_description_clean"].tolist()
+    )
 
     results = []
 
-    for _, row in df.iterrows():
+    for index, row in df.iterrows():
 
-        # Generate embeddings
-        resume_embedding = model.encode(row["resume_text"])[0]
-        job_embedding = model.encode(row["job_description"])[0]
-
-        # Semantic similarity
         semantic_score = cosine_similarity(
-            resume_embedding,
-            job_embedding
+            resume_embeddings[index],
+            job_embeddings[index]
         )
 
-        # Skill matching
         skill_score = calculate_skill_match(
-            row["candidate_skills"],
-            row["required_skills"]
+            row["resume_skills_clean"],
+            row["required_skills_clean"]
         )
 
-        # Experience matching
         experience_score = calculate_experience_match(
             row["experience_years"],
-            row["required_experience"]
+            row["job_experience_required"]
         )
 
-        # Final score
         final_score = calculate_match_score(
             semantic_score=semantic_score,
             skill_score=skill_score,
@@ -55,20 +52,16 @@ def main():
         )
 
         results.append({
-            "candidate_id": row["candidate_id"],
-            "job_id": row["job_id"],
-            "job_title": row["job_title"],
+            "resume_id": row["resume_id"],
             "semantic_score": round(semantic_score, 4),
             "skill_score": round(skill_score, 4),
             "experience_score": round(experience_score, 4),
             "final_match_score": final_score,
-            "match_label": row["match_label"]
+            "shortlisted": row["shortlisted"]
         })
 
-    # Create processed directory
     os.makedirs("data/processed", exist_ok=True)
 
-    # Save results
     results_df = pd.DataFrame(results)
 
     results_df.to_csv(
@@ -76,10 +69,9 @@ def main():
         index=False
     )
 
-    print("\nMatch scoring completed successfully!\n")
-    print(results_df.to_string(index=False))
-
-    print(f"\nSaved to: {OUTPUT_PATH}")
+    print("\nMatch scoring completed successfully!")
+    print(f"Rows processed: {len(results_df)}")
+    print(f"Saved to: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
