@@ -52,3 +52,17 @@ contains the weighted `match_score`, detected `matched_skills` and
 `missing_skills`, plus semantic, skills, and experience component scores.
 
 For offline model experimentation, see `notebooks/01_bge_matching.ipynb`.
+
+## Run with Docker
+
+```bash
+docker build -t talentmatch-api .
+docker run -p 8000:8000 talentmatch-api
+# or
+docker compose up --build
+```
+
+Open <http://localhost:8000> (UI + `POST /match`); health probe at `/health`.
+The BGE model is downloaded and baked into the image at build time, so the
+container starts without internet access. To also start the MLflow UI on
+<http://localhost:5000>: `docker compose --profile mlflow up`.

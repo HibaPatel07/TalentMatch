@@ -15,7 +15,7 @@ const SAMPLE = {
   job: "We are hiring a Machine Learning Engineer with 3+ years of experience. You will work with Python, SQL, machine learning, pandas, Docker and AWS to ship models. Bachelor's degree required."
 };
 
-$("mode").textContent = C.USE_MOCK ? "Demo mode (no backend)" : "Live: " + C.API_BASE;
+$("mode").textContent = C.USE_MOCK ? "Demo mode (no backend)" : "Live: " + (C.API_BASE || window.location.origin);
 $("sample").onclick = () => {
   $("resume").value = SAMPLE.resume;
   $("job").value = SAMPLE.job;

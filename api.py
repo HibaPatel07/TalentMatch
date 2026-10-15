@@ -35,6 +35,12 @@ class MatchRequest(BaseModel):
     job_description: str = Field(min_length=20, max_length=50000)
 
 
+@app.get("/health")
+def health():
+    """Liveness/readiness probe used by the Docker HEALTHCHECK."""
+    return {"status": "ok", "model_loaded": hasattr(app.state, "embedding_model")}
+
+
 @app.post("/match/")
 @app.post("/match")
 def match_documents(request: MatchRequest):

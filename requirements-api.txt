@@ -1,0 +1,7 @@
+# Slim dependency list for the Docker image (inference API only).
+# requirements.txt keeps the full dev/training stack (jupyter, pandas, scikit-learn, ...).
+# torch is installed separately in the Dockerfile (CPU-only build) before this file.
+fastapi
+uvicorn[standard]
+sentence-transformers
+numpy

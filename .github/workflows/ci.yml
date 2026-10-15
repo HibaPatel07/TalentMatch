@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: pip install numpy pytest
+      - name: Run unit tests
+        run: pytest -v
+
+  docker:
+    name: Build image and test API
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t talentmatch-api:ci .
+
+      - name: Start container
+        run: docker run -d --name tm -p 8000:8000 talentmatch-api:ci
+
+      - name: Wait for /health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health; then echo; exit 0; fi
+            sleep 3
+          done
+          echo "API did not become healthy"; docker logs tm; exit 1
+
+      - name: Smoke-test POST /match
+        run: |
+          curl -sf -X POST http://localhost:8000/match \
+            -H "Content-Type: application/json" \
+            -d '{"resume":"Data scientist with 3 years of experience in Python, SQL and machine learning.","job_description":"Looking for an ML engineer with 2+ years experience in Python, SQL and AWS."}' \
+            | tee response.json
+          python3 -c "import json; d=json.load(open('response.json')); assert 0 <= d['match_score'] <= 1"
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker logs tm
