@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    image: talentmatch-api:latest
+    container_name: talentmatch-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+
+  # Optional: MLflow tracking UI so the experiments/registry can be shown from a container.
+  # Start with:  docker compose --profile mlflow up
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    profiles: ["mlflow"]
+    container_name: talentmatch-mlflow
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+
+volumes:
+  mlflow-data:
